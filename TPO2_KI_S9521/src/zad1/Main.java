@@ -21,31 +21,28 @@ public class Main {
     }
 
     public static void startSender() {
-        (new Thread() {
-            @Override
-            public void run() {
-                try {
-                    Socket s = new Socket("localhost", 60010);
-                    BufferedWriter out = new BufferedWriter(
-                            new OutputStreamWriter(s.getOutputStream()));
+        (new Thread(() -> {
+            try {
+                Socket s = new Socket("localhost", 60010);
+                BufferedWriter out = new BufferedWriter(
+                        new OutputStreamWriter(s.getOutputStream()));
 
-                    while (true) {
-                        out.write("Hello World!");
-                        out.newLine();
-                        out.flush();
+                while (true) {
+                    out.write("Hello World!");
+                    out.newLine();
+                    out.flush();
 
-                        Thread.sleep(200);
-                    }
-
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.sleep(200);
                 }
+
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        }).start();
+        })).start();
     }
 
     public static void startServer() {
