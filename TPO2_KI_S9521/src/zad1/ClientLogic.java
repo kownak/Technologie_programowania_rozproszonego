@@ -9,17 +9,16 @@ import java.net.Socket;
  */
 
 public class ClientLogic {
-    private int inPort;
     private int outPort;
 
-    public ClientLogic(int inPort, int outPort) throws IOException {
-        this.inPort = inPort;
+    public ClientLogic(int outPort){
         this.outPort = outPort;
     }
 
-    public String translateWord(String word, String langCode) {
+    public String translateWord(String word, String langCode,int inPort ) {
         final String[] translation = {null};
-        new Thread(() -> {
+        //final int aaa = outPort;
+
 
             try (Socket socket = new Socket("localhost", outPort);
                  BufferedWriter bufferedWriter = new BufferedWriter(
@@ -41,7 +40,7 @@ public class ClientLogic {
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
-        });
+
         return translation[0];
     }
 }

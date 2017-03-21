@@ -1,40 +1,53 @@
 package zad1;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
 
 /**
  * Created by ikownacki on 19.03.2017.
  */
 public class CentralServer {
     int inPort;
-    int outPort;
+    Map<String,Integer> avableLanguageServers;
 
-    public CentralServer(int inPort, int outPort) {
+    public CentralServer(int inPort,  Map<String, Integer> avableLanguageServers) {
         this.inPort = inPort;
-        this.outPort = outPort;
+        this.avableLanguageServers = avableLanguageServers;
     }
 
-    private void runServer() {
+    public void runServer() {
         new Thread(() -> {
 
-            while (true) {
+            try (ServerSocket serverSocket = new ServerSocket(inPort);
+                 Socket socketIn = serverSocket.accept();
+                 BufferedReader bufferedReader = new BufferedReader(
+                         new InputStreamReader(socketIn.getInputStream()))) {
 
-                try (ServerSocket serverSocket = new ServerSocket(inPort);
-                     Socket socket = serverSocket.accept();
-                     BufferedReader bufferedReader = new BufferedReader(
-                             new InputStreamReader(socket.getInputStream()))) {
+                String languageCode = null,
+                        message = null;
+                Integer recipientPort = null;
 
+                languageCode = bufferedReader.readLine();
+                message = bufferedReader.readLine();
+                recipientPort = Integer.valueOf(bufferedReader.readLine());
 
+                int languageServerPort = avableLanguageServers.get(languageCode);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+                try(Socket socketOut = new Socket("localhost", languageServerPort);
+                    BufferedWriter bufferedWriter = new BufferedWriter(
+                            new OutputStreamWriter(socketOut.getOutputStream()))){
+                 bufferedWriter.write(message);
+                 bufferedWriter.write(recipientPort);
                 }
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
+
+        }).start();
 
     }
 }

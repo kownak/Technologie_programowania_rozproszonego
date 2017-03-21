@@ -1,18 +1,46 @@
 package zad1;
 
+import java.io.*;
 import java.net.ServerSocket;
-import java.nio.file.Path;
+import java.net.Socket;
+import java.util.Map;
 
 /**
  * Created by ikownacki on 19.03.2017.
  */
-public class DictionaryServer implements Runnable {
-    Path dictionaryFile;
-    ServerSocket serverSocket;
+public class DictionaryServer {
 
-    @Override
-    public void run() {
+    private int inPort;
+    private Map<String, String> dictionary;
 
+    public DictionaryServer(int inPort, Map<String, String> dictionary) {
+        this.inPort = inPort;
+        this.dictionary = dictionary;
     }
 
+    public void startServer() {
+
+        new Thread(() -> {
+            try (ServerSocket serverSocket = new ServerSocket(inPort);
+                 Socket socketIn = serverSocket.accept();
+                 BufferedReader bufferedReader = new BufferedReader(
+                         new InputStreamReader(socketIn.getInputStream()))) {
+
+                String wordToTranslate = bufferedReader.readLine();
+                int recipientPort = Integer.valueOf(bufferedReader.readLine());
+
+                String translatedWord = dictionary.containsKey(wordToTranslate) ?
+                        dictionary.get(wordToTranslate) : "Brak tłumaczenia w słowniiku";
+
+                try (Socket socketOut = new Socket("localhost", recipientPort);
+                     BufferedWriter bufferedWriter = new BufferedWriter(
+                             new OutputStreamWriter(socketOut.getOutputStream()))) {
+                    bufferedWriter.write(translatedWord);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }).start();
+    }
 }

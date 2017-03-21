@@ -1,67 +1,29 @@
 package zad1;
 
+import javax.security.auth.callback.LanguageCallback;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by ikownacki on 18.03.2017.
  */
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
-        startServer();
-        startSender();
+        Map<String,Integer> servers = new HashMap<>();
+        servers.put("ANG",60113);
+        CentralServer centralServer = new CentralServer(60111, servers);
+        centralServer.runServer();
+
+        Map<String,String> dictionary = new HashMap<>();
+        dictionary.put("dupa","ass");
+        DictionaryServer dictionaryServer = new DictionaryServer(60113, dictionary);
+        dictionaryServer.startServer();
+        // TODO: 22.03.2017 nazwy metod run/start
+
+        ClientGui clientGui = new ClientGui(60111, new String[]{"ANG"});
     }
 
-    public static void startSender() {
-        (new Thread(() -> {
-            try {
-                Socket s = new Socket("localhost", 60010);
-                BufferedWriter out = new BufferedWriter(
-                        new OutputStreamWriter(s.getOutputStream()));
-
-                while (true) {
-                    out.write("Hello World!");
-                    out.newLine();
-                    out.flush();
-
-                    Thread.sleep(200);
-                }
-
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        })).start();
-    }
-
-    public static void startServer() {
-        (new Thread(() -> {
-            ServerSocket ss;
-            try {
-                ss = new ServerSocket(60010);
-
-                Socket s = ss.accept();
-
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(s.getInputStream()));
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    System.out.println(line);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        })).start();
-    }
 }
