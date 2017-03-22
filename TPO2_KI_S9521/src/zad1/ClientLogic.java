@@ -25,10 +25,17 @@ public class ClientLogic {
                          new OutputStreamWriter(socket.getOutputStream()))) {
 
                 bufferedWriter.write(langCode);
-                bufferedWriter.write(word);
-                bufferedWriter.write(inPort);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
 
-                Thread.sleep(200);
+                bufferedWriter.write(word);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                bufferedWriter.write(String.valueOf(inPort));
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
 
                 try (ServerSocket serverSocket = new ServerSocket(inPort);
                      Socket socket1 = serverSocket.accept();
@@ -37,7 +44,7 @@ public class ClientLogic {
                     translation[0] = bufferedReader.readLine();
                 }
 
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 

@@ -36,6 +36,7 @@ public class DictionaryServer {
                      BufferedWriter bufferedWriter = new BufferedWriter(
                              new OutputStreamWriter(socketOut.getOutputStream()))) {
                     bufferedWriter.write(translatedWord);
+                    bufferedWriter.newLine();
                 }
             } catch (IOException e) {
                 e.printStackTrace();

@@ -17,7 +17,7 @@ public class CentralServer {
         this.avableLanguageServers = avableLanguageServers;
     }
 
-    public void runServer() {
+    public void startServer() {
         new Thread(() -> {
 
             try (ServerSocket serverSocket = new ServerSocket(inPort);
@@ -25,13 +25,10 @@ public class CentralServer {
                  BufferedReader bufferedReader = new BufferedReader(
                          new InputStreamReader(socketIn.getInputStream()))) {
 
-                String languageCode = null,
-                        message = null;
-                Integer recipientPort = null;
 
-                languageCode = bufferedReader.readLine();
-                message = bufferedReader.readLine();
-                recipientPort = Integer.valueOf(bufferedReader.readLine());
+                String languageCode = bufferedReader.readLine();
+                String message = bufferedReader.readLine();
+                int recipientPort = Integer.valueOf(bufferedReader.readLine());
 
                 int languageServerPort = avableLanguageServers.get(languageCode);
 
@@ -39,7 +36,9 @@ public class CentralServer {
                     BufferedWriter bufferedWriter = new BufferedWriter(
                             new OutputStreamWriter(socketOut.getOutputStream()))){
                  bufferedWriter.write(message);
-                 bufferedWriter.write(recipientPort);
+                 bufferedWriter.newLine();
+                 bufferedWriter.write(String.valueOf(recipientPort));
+                 bufferedWriter.newLine();
                 }
 
 
