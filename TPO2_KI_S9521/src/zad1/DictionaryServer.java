@@ -21,22 +21,25 @@ public class DictionaryServer {
     public void startServer() {
 
         new Thread(() -> {
-            try (ServerSocket serverSocket = new ServerSocket(inPort);
-                 Socket socketIn = serverSocket.accept();
-                 BufferedReader bufferedReader = new BufferedReader(
-                         new InputStreamReader(socketIn.getInputStream()))) {
+            try (ServerSocket serverSocket = new ServerSocket(inPort)) {
 
-                String wordToTranslate = bufferedReader.readLine();
-                int recipientPort = Integer.valueOf(bufferedReader.readLine());
+                while(true) {
+                    Socket socketIn = serverSocket.accept();
+                    BufferedReader bufferedReader = new BufferedReader(
+                            new InputStreamReader(socketIn.getInputStream()));
 
-                String translatedWord = dictionary.containsKey(wordToTranslate) ?
-                        dictionary.get(wordToTranslate) : "Brak tłumaczenia w słowniiku";
+                    String wordToTranslate = bufferedReader.readLine();
+                    int recipientPort = Integer.valueOf(bufferedReader.readLine());
 
-                try (Socket socketOut = new Socket("localhost", recipientPort);
-                     BufferedWriter bufferedWriter = new BufferedWriter(
-                             new OutputStreamWriter(socketOut.getOutputStream()))) {
-                    bufferedWriter.write(translatedWord);
-                    bufferedWriter.newLine();
+                    String translatedWord = dictionary.containsKey(wordToTranslate) ?
+                            dictionary.get(wordToTranslate) : "Brak tłumaczenia w słowniiku";
+
+                    try (Socket socketOut = new Socket("localhost", recipientPort);
+                         BufferedWriter bufferedWriter = new BufferedWriter(
+                                 new OutputStreamWriter(socketOut.getOutputStream()))) {
+                        bufferedWriter.write(translatedWord);
+                        bufferedWriter.newLine();
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
