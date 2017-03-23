@@ -1,0 +1,4 @@
+port:60114
+jezyk:FR
+rzeka:fr_rzeka
+pies:fr_pies

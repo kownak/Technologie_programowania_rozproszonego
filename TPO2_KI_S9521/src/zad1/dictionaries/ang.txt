@@ -1,0 +1,4 @@
+port:60113
+jezyk:ANG
+drzewo:tree
+rzeka:river
