@@ -21,9 +21,14 @@ public class ClientGui{
         JFrame guiFrame = new JFrame();
 
         guiFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        guiFrame.setTitle("Example GUI");
+        guiFrame.setTitle("Słownik");
         guiFrame.setSize(360, 250);
         guiFrame.setLocationRelativeTo(null);
+
+        JPanel generalPanel = new JPanel();
+        BoxLayout boxLayout = new BoxLayout(generalPanel,BoxLayout.Y_AXIS);
+        generalPanel.setLayout(boxLayout);
+
 
         final JPanel jPanel1 = new JPanel();
         JComboBox<String> languageCode = new JComboBox<>(languages);
@@ -33,13 +38,13 @@ public class ClientGui{
 
         final JPanel jPanel2 = new JPanel();
         JLabel portLabel = new JLabel("Port:");
-        JTextField tf_port = new JTextField();
+        JTextField tf_port = new JTextField(6);
         jPanel2.add(portLabel);
         jPanel2.add(tf_port);
 
         final JPanel jPanel3 = new JPanel();
         JLabel label = new JLabel("Tłumaczenie:");
-        JLabel translatedWord = new JLabel("przetłumaczone gówno");
+        JLabel translatedWord = new JLabel("***");
         jPanel3.add(label);
         jPanel3.add(translatedWord);
 
@@ -51,10 +56,12 @@ public class ClientGui{
             translatedWord.setText(translatedWordString);
         });
 
-        guiFrame.add(jPanel1, BorderLayout.NORTH);
-        guiFrame.add(jPanel2, BorderLayout.CENTER);
-        guiFrame.add(jPanel3, BorderLayout.CENTER);
-        guiFrame.add(translate, BorderLayout.SOUTH);
+        generalPanel.add(jPanel1);
+        generalPanel.add(jPanel2);
+        generalPanel.add(jPanel3);
+        generalPanel.add(translate);
+
+        guiFrame.add(generalPanel);
         guiFrame.setVisible(true);
     }
 

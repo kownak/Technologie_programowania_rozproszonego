@@ -9,7 +9,6 @@ import java.util.Map;
  * Created by ikownacki on 19.03.2017.
  */
 public class DictionaryServer {
-
     private int inPort;
     private Map<String, String> dictionary;
 
@@ -21,9 +20,11 @@ public class DictionaryServer {
     public void startServer() {
 
         new Thread(() -> {
+
             try (ServerSocket serverSocket = new ServerSocket(inPort)) {
 
-                while(true) {
+                while (true) {
+
                     Socket socketIn = serverSocket.accept();
                     BufferedReader bufferedReader = new BufferedReader(
                             new InputStreamReader(socketIn.getInputStream()));
@@ -34,12 +35,19 @@ public class DictionaryServer {
                     String translatedWord = dictionary.containsKey(wordToTranslate) ?
                             dictionary.get(wordToTranslate) : "Brak tłumaczenia w słowniiku";
 
-                    try (Socket socketOut = new Socket("localhost", recipientPort);
-                         BufferedWriter bufferedWriter = new BufferedWriter(
-                                 new OutputStreamWriter(socketOut.getOutputStream()))) {
-                        bufferedWriter.write(translatedWord);
-                        bufferedWriter.newLine();
-                    }
+                    Socket socketOut = new Socket("localhost", recipientPort);
+                    BufferedWriter bufferedWriter = new BufferedWriter(
+                            new OutputStreamWriter(socketOut.getOutputStream()));
+
+                    bufferedWriter.write(translatedWord);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+
+                    bufferedReader.close();
+                    socketIn.close();
+                    bufferedWriter.close();
+                    socketOut.close();
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
