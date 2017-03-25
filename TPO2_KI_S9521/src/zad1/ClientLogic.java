@@ -15,12 +15,13 @@ public class ClientLogic {
         this.outPort = outPort;
     }
 
-    public String translateWord(String word, String langCode, int inPort) {
+    public String translateWord(String word, String langCode, int inPort){
         final String[] translation = {null};
 
         try (Socket socket = new Socket("localhost", outPort);
              BufferedWriter bufferedWriter = new BufferedWriter(
                      new OutputStreamWriter(socket.getOutputStream()))) {
+            ServerSocket serverSocket = new ServerSocket(inPort);
 
             bufferedWriter.write(langCode);
             bufferedWriter.newLine();
@@ -34,7 +35,7 @@ public class ClientLogic {
             bufferedWriter.newLine();
             bufferedWriter.flush();
 
-            ServerSocket serverSocket = new ServerSocket(inPort);
+
             Socket socket1 = serverSocket.accept();
             BufferedReader bufferedReader = new BufferedReader(
                     new InputStreamReader(socket1.getInputStream()));

@@ -24,30 +24,7 @@ public class DictionaryServer {
             try (ServerSocket serverSocket = new ServerSocket(inPort)) {
 
                 while (true) {
-
-                    Socket socketIn = serverSocket.accept();
-                    BufferedReader bufferedReader = new BufferedReader(
-                            new InputStreamReader(socketIn.getInputStream()));
-
-                    String wordToTranslate = bufferedReader.readLine();
-                    int recipientPort = Integer.valueOf(bufferedReader.readLine());
-
-                    String translatedWord = dictionary.containsKey(wordToTranslate) ?
-                            dictionary.get(wordToTranslate) : "Brak tłumaczenia w słowniiku";
-
-                    Socket socketOut = new Socket("localhost", recipientPort);
-                    BufferedWriter bufferedWriter = new BufferedWriter(
-                            new OutputStreamWriter(socketOut.getOutputStream()));
-
-                    bufferedWriter.write(translatedWord);
-                    bufferedWriter.newLine();
-                    bufferedWriter.flush();
-
-                    bufferedReader.close();
-                    socketIn.close();
-                    bufferedWriter.close();
-                    socketOut.close();
-
+                    handleConnection(serverSocket);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -55,4 +32,30 @@ public class DictionaryServer {
 
         }).start();
     }
+
+    private void handleConnection(ServerSocket serverSocket) {
+        try (Socket socketIn = serverSocket.accept();
+             BufferedReader bufferedReader = new BufferedReader(
+                     new InputStreamReader(socketIn.getInputStream()))) {
+
+            String wordToTranslate = bufferedReader.readLine();
+            int recipientPort = Integer.valueOf(bufferedReader.readLine());
+
+            String translatedWord = dictionary.containsKey(wordToTranslate) ?
+                    dictionary.get(wordToTranslate) : "Brak tłumaczenia w słowniiku";
+
+            Socket socketOut = new Socket("localhost", recipientPort);
+            BufferedWriter bufferedWriter = new BufferedWriter(
+                    new OutputStreamWriter(socketOut.getOutputStream()));
+
+            bufferedWriter.write(translatedWord);
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

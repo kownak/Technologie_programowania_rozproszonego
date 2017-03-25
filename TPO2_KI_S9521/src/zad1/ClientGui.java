@@ -11,11 +11,11 @@ import javax.swing.JPanel;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import java.awt.BorderLayout;
+import java.util.List;
 
 public class ClientGui{
 
-    public ClientGui(int outPort, String[] languages) {
+    public ClientGui(int outPort, String[] languages, String message, List<Integer> usedPorts) {
         ClientLogic clientLogic =  new ClientLogic(outPort);
 
         JFrame guiFrame = new JFrame();
@@ -44,7 +44,7 @@ public class ClientGui{
 
         final JPanel jPanel3 = new JPanel();
         JLabel label = new JLabel("Tłumaczenie:");
-        JLabel translatedWord = new JLabel("***");
+        JLabel translatedWord = new JLabel(message);
         jPanel3.add(label);
         jPanel3.add(translatedWord);
 
@@ -52,8 +52,17 @@ public class ClientGui{
         translate.addActionListener(event -> {
             String wordToTranslate = tf_wordToTranslate.getText();
             String lCode = (String) languageCode.getSelectedItem();
-            String translatedWordString = clientLogic.translateWord(wordToTranslate,lCode,60122); // TODO: 21.03.2017 hardcode
-            translatedWord.setText(translatedWordString);
+            try{
+
+                int clientInPort = Integer.parseInt(tf_port.getText());
+                String translatedWordString =  !usedPorts.contains(clientInPort) ?
+                        clientLogic.translateWord(wordToTranslate,lCode,clientInPort) : "Port jest już zajęty";
+                translatedWord.setText(translatedWordString);
+
+            }catch (NumberFormatException e){
+                translatedWord.setText("Błędny numer portu");
+            }
+
         });
 
         generalPanel.add(jPanel1);
