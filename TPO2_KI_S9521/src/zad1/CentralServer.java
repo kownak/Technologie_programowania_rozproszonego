@@ -24,7 +24,7 @@ public class CentralServer {
             try (ServerSocket serverSocket = new ServerSocket(inPort)) {
 
                 while (true) {
-                    handleConection(serverSocket);
+                    handleConnection(serverSocket);
                 }
 
             } catch (IOException e) {
@@ -33,7 +33,7 @@ public class CentralServer {
         }).start();
     }
 
-    private void handleConection(ServerSocket serverSocket) {
+    private void handleConnection(ServerSocket serverSocket) {
 
         try (Socket socketIn = serverSocket.accept();
              BufferedReader bufferedReader = new BufferedReader(
