@@ -2,69 +2,90 @@ package Zad1;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Vector;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 /**
  * Created by ikownacki on 07.04.2017.
  */
 public class AdminGui {
 
-    public AdminGui() {
+    public AdminGui(String host, int port) throws IOException {
+        final AdminLogic adminLogic;
+
+        adminLogic = new AdminLogic(host, port);
+
+
         JFrame mainFrame = new JFrame();
+        mainFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    adminLogic.closeConnection();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
 
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mainFrame.setTitle("Administrator");
-        mainFrame.setSize(400,300);
-        mainFrame.setLocationRelativeTo(null);
+        mainFrame.setSize(400, 300);
 
-        JPanel mainFramePanel = new JPanel(new GridLayout(0,2));
+
+        JPanel mainFramePanel = new JPanel(new GridLayout(0, 2));
         JTabbedPane jTabbedPane = new JTabbedPane();
 
 
-
-
         JScrollPane scrollPane = new JScrollPane();
-        DefaultListModel<String> model= new DefaultListModel<>();
+        DefaultListModel<String> model = new DefaultListModel<>();
         JList<String> subjectsJList = new JList<>(model);
         subjectsJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         scrollPane.setViewportView(subjectsJList);
 
 
-
-        JPanel subjectsOptionJPanel = new JPanel(new GridLayout(6,1));
+        JPanel subjectsOptionJPanel = new JPanel(new GridLayout(6, 1));
         JTextField subjectTextField = new JTextField();
-        JButton addButon = new JButton("Dodaj");
-        addButon.addActionListener(e -> {
+        JButton addButton = new JButton("Dodaj");
+        addButton.addActionListener(e -> {
             String string = subjectTextField.getText();
-            if(string == null || string.equals("") || model.contains(string)){
+            if (string == null || string.equals("") || model.contains(string)) {
                 return;
             }
             model.addElement(string);
             subjectTextField.setText("");
+            adminLogic.addSubject(string);
         });
-        JButton deleteButon = new JButton("Usuń");
-        deleteButon.addActionListener(e -> {
+        JButton deleteButton = new JButton("Usuń");
+        deleteButton.addActionListener(e -> {
             String string = subjectTextField.getText();
-            if (string ==null || string.equals("")){
+            if (string == null || string.equals("")) {
                 return;
             }
-            model.removeElement(string);
+            if(model.contains(string)) {
+                model.removeElement(string);
+                adminLogic.deleteSubject(string);
+            }
 
         });
         subjectsOptionJPanel.add(subjectTextField);
-        subjectsOptionJPanel.add(addButon);
-        subjectsOptionJPanel.add(deleteButon);
+        subjectsOptionJPanel.add(addButton);
+        subjectsOptionJPanel.add(deleteButton);
 
         final String[] selectedSubject = new String[1];
 
-        JPanel sendingOptionPannel = new JPanel(new BorderLayout());
+        JPanel sendingOptionPanel = new JPanel(new BorderLayout());
         JTextArea textArea = new JTextArea();
         textArea.setLineWrap(true);
         JButton sendButton = new JButton("Wyślij");
-        sendingOptionPannel.add(textArea, BorderLayout.CENTER);
-        sendingOptionPannel.add(sendButton, BorderLayout.SOUTH);
+        sendButton.addActionListener(e -> {
+            String subject = subjectsJList.getSelectedValue();
+            String message = textArea.getText();
+            adminLogic.sendMessageToSubscribers(subject, message);
+        });
+        sendingOptionPanel.add(textArea, BorderLayout.CENTER);
+        sendingOptionPanel.add(sendButton, BorderLayout.SOUTH);
 
 
         subjectsJList.addListSelectionListener(e -> {
@@ -74,8 +95,8 @@ public class AdminGui {
         });
 
 
-        jTabbedPane.addTab("Tematy",subjectsOptionJPanel);
-        jTabbedPane.addTab("Wysyłanie",sendingOptionPannel);
+        jTabbedPane.addTab("Tematy", subjectsOptionJPanel);
+        jTabbedPane.addTab("Wysyłanie", sendingOptionPanel);
 
         mainFramePanel.add(scrollPane);
         mainFramePanel.add(jTabbedPane);
@@ -85,6 +106,10 @@ public class AdminGui {
     }
 
     public static void main(String[] args) {
-        new AdminGui();
+        try {
+            new AdminGui("localhost", 49000);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
