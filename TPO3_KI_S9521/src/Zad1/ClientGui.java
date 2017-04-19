@@ -11,8 +11,13 @@ import java.io.IOException;
  */
 public class ClientGui {
 
-    public ClientGui(String host, int port) throws IOException {
-        ClientLogic clientLogic = new ClientLogic(host,port);
+    DefaultListModel<String> subscriptionsListModel;
+    DefaultListModel<String> subjectsListModel;
+    JTextArea messageTextArea;
+
+    public ClientGui(ClientLogic clientLogic) throws IOException {
+
+
         JFrame mainFrame = new JFrame();
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mainFrame.setTitle("Klient");
@@ -37,7 +42,7 @@ public class ClientGui {
         JPanel subjectsPanel = new JPanel(new BorderLayout());
         JLabel subjectsLabel = new JLabel("Dostępne tematy:");
         JScrollPane subjectsScrollPane = new JScrollPane();
-        DefaultListModel<String> subjectsListModel = new DefaultListModel<>();
+        subjectsListModel= new DefaultListModel<>();
         JList<String> subjectsJList = new JList<>(subjectsListModel);
         subjectsScrollPane.setViewportView(subjectsJList);
 
@@ -55,7 +60,7 @@ public class ClientGui {
         JPanel subscriptionsPanel = new JPanel(new BorderLayout());
         JLabel subscriptionsLabel = new JLabel("Twoje tematy:");
         JScrollPane subscriptionsScrollPane = new JScrollPane();
-        DefaultListModel<String> subscriptionsListModel = new DefaultListModel<>();
+        subscriptionsListModel = new DefaultListModel<>();
         JList<String> subscriptionsJList = new JList<>(subscriptionsListModel);
         subscriptionsScrollPane.setViewportView(subscriptionsJList);
 
@@ -70,7 +75,7 @@ public class ClientGui {
 
         subscribeButton.addActionListener(e -> {
             String string = subjectsJList.getSelectedValue();
-            if (string == null) {
+            if (string == null || subscriptionsListModel.contains(string)) {
                 return;
             }
             subscriptionsListModel.addElement(string);
@@ -83,7 +88,7 @@ public class ClientGui {
             if (string == null) {
                 return;
             }
-            subscriptionsListModel.addElement(string);
+            subscriptionsListModel.removeElement(string);
             clientLogic.unSubscribe(string);
         });
 
@@ -92,7 +97,7 @@ public class ClientGui {
         JLabel currentSubject = new JLabel();
         messagePanel.add(currentSubject, BorderLayout.NORTH);
 
-        JTextArea messageTextArea = new JTextArea();
+        messageTextArea= new JTextArea();
         messageTextArea.setVisible(true);
         messageTextArea.setEnabled(false);
         messagePanel.add(messageTextArea, BorderLayout.CENTER);
@@ -110,17 +115,27 @@ public class ClientGui {
             subjectsListModel.addElement(string);
         }
 
+        mainFrame.repaint();
+
 
     }
 
-    public static void main(String[] args) {
-        try {
-            new ClientGui("localhost", 49000);
-            System.out.println("Klient stworzony");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void addSubject(String subject){
+        subjectsListModel.addElement(subject);
+
     }
+
+    public void deleteSubject(String subject){
+        subjectsListModel.removeElement(subject);
+        subscriptionsListModel.removeElement(subject);
+    }
+
+    public void showMessage(String subject, String message){
+        messageTextArea.setText(subject+"\n"+message);
+    }
+
+
+
 
 
 }

@@ -3,10 +3,7 @@ package Zad1;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -17,10 +14,8 @@ public class CentralServer implements AvailableCommends {
 
     private Selector selector;
     private ServerSocketChannel serverSocketChannel;
-    private List<SocketChannel> allConnections;
-    private Map<String, List<SocketChannel>> subjectSubscribersMap;
-//
-//
+    private Map<String, SocketChannel> allListenersConnections;
+    private Map<String, Map<String, SocketChannel>> subjectSubscribersMap;
 
 
     public CentralServer(String host, int port) {
@@ -36,7 +31,7 @@ public class CentralServer implements AvailableCommends {
             System.exit(1);
         }
         subjectSubscribersMap = new HashMap<>();
-        allConnections = new ArrayList<>();
+        allListenersConnections = new HashMap<>();
         serviceAllConnections();
 
     }
@@ -48,9 +43,8 @@ public class CentralServer implements AvailableCommends {
 
                 selector.select();
                 Set<SelectionKey> keys = selector.selectedKeys();
-
-
                 Iterator<SelectionKey> iterator = keys.iterator();
+
                 while ((iterator.hasNext())) {
                     SelectionKey selectionKey = iterator.next();
 
@@ -58,7 +52,7 @@ public class CentralServer implements AvailableCommends {
                     if (selectionKey.isAcceptable()) {
                         SocketChannel socketChannel = serverSocketChannel.accept();
                         socketChannel.configureBlocking(false);
-                        allConnections.add(socketChannel);
+
                         socketChannel.register(selector, SelectionKey.OP_READ);
 
                         iterator.remove();
@@ -119,55 +113,70 @@ public class CentralServer implements AvailableCommends {
             if (currentSubjects.size() > 0) {
                 for (String currentSubject : currentSubjects) {
                     stringBuilder.append(currentSubject);
+                    stringBuilder.append(SEPARATOR);
                 }
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             } else {
                 stringBuilder.append(NO_DATA);
             }
-
             String builtString = stringBuilder.toString();
-
             sendToClient(socketChannel, builtString);
+
+
+        } else if (command.equals(REGISTER)) {
+
+            String host = request[1];
+            int port = Integer.parseInt(request[2]);
+            String name = host + SEPARATOR + port;
+            SocketChannel sc = SocketChannel.open();
+            sc.connect(new InetSocketAddress(host, port));
+            allListenersConnections.put(name, sc);
 
         } else if (command.equals(ADD_SUBJECT)) {
 
-            subjectSubscribersMap.put(request[1],new ArrayList<>());
-            for (SocketChannel client : allConnections){
-                sendToClient(client, ADD_SUBJECT+SEPARATOR+request[1]);
+            subjectSubscribersMap.put(request[1], new HashMap<>());
+            for (SocketChannel client : allListenersConnections.values()) {
+                sendToClient(client, ADD_SUBJECT + SEPARATOR + request[1]);
             }
 
         } else if (command.equals(DELETE_SUBJECT)) {
 
             subjectSubscribersMap.remove(request[1]);
-            for (SocketChannel client : allConnections){
-                sendToClient(client, DELETE_SUBJECT+SEPARATOR+request[1]);
+            for (SocketChannel client : allListenersConnections.values()) {
+                sendToClient(client, DELETE_SUBJECT + SEPARATOR + request[1]);
             }
 
         } else if (command.equals(SEND_TO_SUBSCRIBERS)) {
 
-            for (SocketChannel client : subjectSubscribersMap.get(request[1])){
-                sendToClient(client,request[1],request[2]);
+            String subject = request[1];
+            Map<String, SocketChannel> map = subjectSubscribersMap.get(subject);
+            for (SocketChannel client : map.values()) {
+                if (client != null) {
+                    sendToClient(client, SEND_TO_SUBSCRIBERS + SEPARATOR + subject + SEPARATOR + request[2]);
+                }
             }
 
         } else if (command.equals(SUBSCRIBE)) {
-
-            if(subjectSubscribersMap.containsKey(request[1])){
-                subjectSubscribersMap.get(request[1]).add(socketChannel);
-            }else{
-                sendToClient(socketChannel, NO_SUBJECT);
-            }
+            String host = request[1];
+            int port = Integer.parseInt(request[2]);
+            String subject = request[3];
+            String name = host + SEPARATOR + port;
+            SocketChannel sc = allListenersConnections.get(name);
+            subjectSubscribersMap.get(subject).put(name, sc);
+            sendToClient(socketChannel, SUBSCRIBE);
 
 
         } else if (command.equals(UN_SUBSCRIBE)) {
+            String host = request[1];
+            int port = Integer.parseInt(request[2]);
+            String subject = request[3];
+            String name = host + SEPARATOR + port;
+            subjectSubscribersMap.get(subject).remove(name);
+            sendToClient(socketChannel, UN_SUBSCRIBE);
 
-            if(subjectSubscribersMap.containsKey(request[1])){
-                subjectSubscribersMap.get(request[1]).remove(socketChannel);
-            }else{
-                sendToClient(socketChannel, NO_SUBJECT);
-            }
 
         } else if (command.equals(BYE)) {
-            allConnections.remove(socketChannel);
-            socketChannel.close();
+            closeConnection(socketChannel);
         }
     }
 
@@ -179,22 +188,21 @@ public class CentralServer implements AvailableCommends {
             socketChannel.write(byteBuffer);
         } catch (IOException e) {
             e.printStackTrace();
+            closeConnection(socketChannel);
         }
     }
 
-    private void sendToClient(SocketChannel socketChannel, String subject, String message ) {
-        String concatenatedString= subject+SEPARATOR+message;
-        ByteBuffer byteBuffer = ByteBuffer.wrap(concatenatedString.getBytes(Charset.forName("UTF-8")));
 
+    private void closeConnection(SocketChannel socketChannel) {
+        allListenersConnections.remove(socketChannel);
         try {
-            socketChannel.write(byteBuffer);
+            socketChannel.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
-        CentralServer centralServer = new CentralServer("localhost", 49000);
-
+        CentralServer centralServer = new CentralServer("localhost", 45000);
     }
 }

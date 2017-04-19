@@ -10,6 +10,7 @@ public interface AvailableCommends {
     String SEND_TO_SUBSCRIBERS = "sendToSubscribers";
     String SUBSCRIBE = "subscribe";
     String UN_SUBSCRIBE = "unSubscribe";
+    String REGISTER = "register";
     String BYE = "BYE";
     String SEPARATOR = "#";
     String NO_DATA = "noData";

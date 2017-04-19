@@ -11,12 +11,7 @@ import java.io.IOException;
  */
 public class AdminGui {
 
-    public AdminGui(String host, int port) throws IOException {
-        final AdminLogic adminLogic;
-
-        adminLogic = new AdminLogic(host, port);
-
-
+    public AdminGui(AdminLogic adminLogic) throws IOException {
         JFrame mainFrame = new JFrame();
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
@@ -55,7 +50,11 @@ public class AdminGui {
             }
             model.addElement(string);
             subjectTextField.setText("");
-            adminLogic.addSubject(string);
+            try {
+                adminLogic.addSubject(string);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         });
         JButton deleteButton = new JButton("Usuń");
         deleteButton.addActionListener(e -> {
@@ -63,7 +62,7 @@ public class AdminGui {
             if (string == null || string.equals("")) {
                 return;
             }
-            if(model.contains(string)) {
+            if (model.contains(string)) {
                 model.removeElement(string);
                 adminLogic.deleteSubject(string);
             }
@@ -105,11 +104,5 @@ public class AdminGui {
         mainFrame.setVisible(true);
     }
 
-    public static void main(String[] args) {
-        try {
-            new AdminGui("localhost", 49000);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 }
