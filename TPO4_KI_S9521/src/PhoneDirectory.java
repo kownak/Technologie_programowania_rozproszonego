@@ -47,7 +47,7 @@ public class PhoneDirectory extends PortableRemoteObject implements PhoneDirecto
         StringBuilder stringBuilder = new StringBuilder();
 
         for (String key : pbMap.keySet()){
-            stringBuilder.append(key);
+            stringBuilder.append("'"+key+"'");
             stringBuilder.append(" ");
             stringBuilder.append(pbMap.get(key));
             stringBuilder.append("\n");

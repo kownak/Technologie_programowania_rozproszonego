@@ -2,6 +2,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
+import java.rmi.RemoteException;
 
 /**
  * Created by ikownacki on 30.04.2017.
@@ -19,7 +20,12 @@ public class PhoneClientLogic {
 
             PhoneClientGui phoneClientGui = new PhoneClientGui(phoneDirectoryInterface);
 
-            System.out.println(phoneDirectoryInterface.toString());
+            try {
+                System.out.println(phoneDirectoryInterface.getPhoneNumber("Stefan Las "));
+                System.out.println(phoneDirectoryInterface.getAll());
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
 
         } catch (NamingException e) {
             e.printStackTrace();
